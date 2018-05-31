@@ -11,6 +11,8 @@ Depends:
 Imports:
     dplyr,
     ggplot2,
+    raster,
+    sp,
     stringr,
     tidyr
 License: GPL (>= 2)
