@@ -1,0 +1,183 @@
+---
+title: "VMS cleanup and summary"
+output:
+  html_document: default
+---
+The code in this Rmarkdown document produces a clean VMS dataset with the same column names so it can be used with
+the other Rmarkdown documents.  The output format includes the following five columns:
+
+* vid - vessel ID
+* date - date and time (in format YYYY-MM-DD HH:MM.SS)
+* lat - latitude (in decimal degrees)
+* lon - longitude (in decimal degrees)
+
+## Input parameters
+```{r}
+country = "Sierra Leone"  # choices "Ghana", "Liberia", "Sierra Leone"
+
+# Path to VMS data file
+file.in = "Sierra_Leone_sample.csv"
+file.out = "Sierra_Leone_sample_clean.csv"
+
+# Range of speeds considered as fishing
+speed.min = 2
+speed.max = 4.5
+
+# Maximum realistic speed
+speed.limit = 15
+
+# Filter VMS data by a date interval?
+filter.by.date = "No"   # choices "Yes" or "No"
+
+# If yes,  which interval?
+
+date.min = "2018-02-16 00:00:00"
+date.max = "2018-05-29 23:59:00"
+
+
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+# Needed libaries
+library(knitr)
+library(tidyverse)
+library(lubridate)
+library(rio)
+
+# Function to import the data from each nation into R and give it a similar format
+vms_import_data <- function(file.name, country)
+{
+
+  if(country == "Ghana") {
+    d <- import(file.name, setclass="tibble") %>%
+      rename(vid = "Vessel Name",
+             date = Date,
+             lon = Lond,
+             lat = Lat,
+             speed = Speed) %>%
+      mutate(date = dmy_hm(date),
+             lon = as.numeric(lon),
+             lat = as.numeric(lat),
+             speed = as.numeric(speed),
+             activity = case_when(speed < speed.min ~ paste0("<", speed.min),
+                                  speed < speed.max ~ paste0(speed.min, "-", speed.max),
+                                  TRUE ~ paste0(">", speed.max))) %>%
+      arrange(vid, date)
+  }
+
+  if(country == "Sierra Leone") {
+    d <- import(file.name, setclass="tibble") %>%
+      rename(vid = PublicDeviceID,
+             date = ReceiveTime, # or gpsTime???
+             lon = Lon,
+             lat = Lat,
+             speed = Speed) %>%
+      mutate(lat = as.numeric(str_replace(lat,  ",",  ".")),
+             lon = as.numeric(str_replace(lon,  ",",  ".")),
+             date = str_sub(date, 1, 19),
+             date = ymd_hms(date),
+             speed = as.numeric(speed) * 3600/185200,
+             activity = case_when(speed < speed.min ~ paste0("<", speed.min),
+                                  speed < speed.max ~ paste0(speed.min, "-", speed.max),
+                                  TRUE ~ paste0(">", speed.max)))%>%
+      arrange(vid, date)
+  }
+
+  if(country == "Liberia") {
+    d <- import(file.name, setclass="tibble") %>%
+      rename(date = DateTime, # or gpsTime???
+             lon = Longitude,
+             lat = Latitude,
+             speed = "Speed (MPH)") %>%
+      mutate(date = ymd_hms(date),
+             lat = as.numeric(lat),
+             lon = as.numeric(lon),
+             activity = case_when(speed < speed.min ~ paste0("<", speed.min),
+                                  speed < speed.max ~ paste0(speed.min, "-", speed.max),
+                                  TRUE ~ paste0(">", speed.max))) %>%
+      arrange(vid, date)
+  }
+
+
+  d <- d %>%
+    dplyr::filter(speed <= speed.limit)
+
+
+  return(d)
+}
+
+
+vms_plot_speed <- function(d, bindwidth = 0.5, lim = speed.limit) {
+
+    d %>%
+      dplyr::select(speed, activity) %>%
+      dplyr::mutate(activity = ifelse(dplyr::between(speed, speed.min, speed.max),
+                                    "Fishing", "Not fishing")) %>%
+      tidyr::drop_na() %>%
+      ggplot() +
+      theme_bw(base_size = 16) +
+      geom_histogram (aes(x=speed, fill = activity), binwidth = 0.5) +
+      xlim(0, speed.limit)
+}
+
+
+vms <- vms_import_data(file.in, country)
+
+if(filter.by.date == "Yes"){
+vms <- vms %>%
+  dplyr::filter(between(date, ymd_hms(date.min), ymd_hms(date.max)))
+}
+
+```
+## Data summary
+
+
+```{r}
+vms %>%
+  mutate(day = day(date)) %>%
+  summarise(Date.minimum = min(date, na.rm = TRUE),
+            Date.maximum = max(date, na.rm = TRUE),
+            Date.missing = sum(is.na(date)),
+            Date.distinct = n_distinct(day),
+            Longitude.minimum = min(lon, na.rm = TRUE),
+            Longitude.maximum = max(lon, na.rm = TRUE),
+            Longitude.missing = sum(is.na(lon)),
+            Latitude.minimum = min(lat, na.rm = TRUE),
+            Latitude.maximum = max(lat, na.rm = TRUE),
+            Latitude.missing = sum(is.na(lat)),
+            Speed.minimum = min(speed, na.rm = TRUE),
+            Speed.maximum = max(speed, na.rm = TRUE),
+            Speed.missing = sum(is.na(speed)),
+            Vessel.distinct = n_distinct(vid))%>%
+  mutate_all(as.character) %>%
+  gather(variable, value) %>%
+  separate(variable, c("variable", "statistics")) %>%
+  knitr::kable()
+
+vms_plot_speed(vms)
+
+```
+
+## Vessel summary
+
+
+```{r}
+
+fs <- unique(vms$activity)
+vms %>%
+  group_by(vid) %>%
+  summarise(Total_records = length(activity),
+            Fishing_records = sum(activity == fs[1])) %>%
+  rename(Vessel = vid) %>%
+  knitr::kable()
+
+vms %>%
+  dplyr::select(vid, date, lon, lat, speed) %>%
+  mutate(date = as.character(date)) %>%
+  write_csv(file.out)
+
+```
