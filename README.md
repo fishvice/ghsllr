@@ -1,5 +1,5 @@
 ## Installation
 
 ```
-devtools::install_github("fishvice/mar",  dependencies = FALSE)
+devtools::install_github("fishvice/ghsllr",  dependencies = FALSE)
 ```
