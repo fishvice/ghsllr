@@ -3,37 +3,58 @@ title: "VMS cleanup and summary"
 output:
   html_document: default
 ---
-The code in this Rmarkdown document produces a clean VMS dataset with the same column names so it can be used with
-the other Rmarkdown documents.  The output format includes the following five columns:
+
+## Preamble
+
+The code in this Rmarkdown document imports some vms data
+
+produces a clean VMS dataset with the same column names so it can be used with the other Rmarkdown documents.  The output format includes the following five columns:
 
 * vid - vessel ID
-* date - date and time (in format YYYY-MM-DD HH:MM.SS)
-* lat - latitude (in decimal degrees)
-* lon - longitude (in decimal degrees)
+* date - Date (in format YYYY-MM-DD HH:MM.SS)
+* lat - Latitude (in decimal degrees)
+* lon - Longitude (in decimal degrees)
+* speed - Instantaneous reported vessel speed (in knots)
+* country - Name of country - used in later processing
 
-## Input parameters
+## Input parameters (user specification)
+
 ```{r}
-country = "Sierra Leone"  # choices "Ghana", "Liberia", "Sierra Leone"
+# NOTE THAT ANYTHING THAT STARTS WITH A "#" IN THE CODE SECTION MEANS COMMENT
 
-# Path to VMS data file
-file.in = "Sierra_Leone_sample.csv"
-file.out = "Sierra_Leone_sample_clean.csv"
+# YOUR COUNTRY NAME ------------------------------------------------------------
+# Current choices: "Ghana", "Liberia", "Sierra Leone", "Iceland"
+country <- "Iceland"  
 
-# Range of speeds considered as fishing
+# THE FILE NAME TO READ IN AND THE FILE NAME OF THE STANDARDIZED DATA TO SAVE --
+
+# Path to and file name to VMS data file you want to analyze
+# If the country data is Iceland it does not matter what you typ in here: it will be ignored
+file.in = "iceland_vms.csv"
+
+# The path and the file name for the output file (standardized format)
+file.out = "VMS_standardized.csv"
+
+# THE SPEED RANGE TO CONSIDERED AS FISHING AND THE MAXIMUM REALISTIC SPEED -----
+#  Units are in knots
 speed.min = 2
 speed.max = 4.5
 
 # Maximum realistic speed
+#  NOTE: Julian - I am not sure if we should remove these points from
+#        the standardized file
 speed.limit = 15
 
+# DATE RANGE TO INCLUDE IN THE ANALYSIS ----------------------------------------
+#      Dates outside this range will be removed before the output files is saved
+#      Lets call this our standardized format
+
 # Filter VMS data by a date interval?
+# Choices are "Yes" or "No"
 filter.by.date = "No"   # choices "Yes" or "No"
-
-# If yes,  which interval?
-
-date.min = "2018-02-16 00:00:00"
-date.max = "2018-05-29 23:59:00"
-
+# If yes above,  specify interval (use YYYY-MM-DD HH:MM:SS format)
+date.min = "2000-01-01 00:00:00"
+date.max = "2100-12-31 23:59:59"
 
 ```
 
@@ -47,94 +68,28 @@ library(knitr)
 library(tidyverse)
 library(lubridate)
 library(rio)
+library(ghsllr)
+```
 
-# Function to import the data from each nation into R and give it a similar format
-vms_import_data <- function(file.name, country)
-{
-
-  if(country == "Ghana") {
-    d <- import(file.name, setclass="tibble") %>%
-      rename(vid = "Vessel Name",
-             date = Date,
-             lon = Lond,
-             lat = Lat,
-             speed = Speed) %>%
-      mutate(date = dmy_hm(date),
-             lon = as.numeric(lon),
-             lat = as.numeric(lat),
-             speed = as.numeric(speed),
-             activity = case_when(speed < speed.min ~ paste0("<", speed.min),
-                                  speed < speed.max ~ paste0(speed.min, "-", speed.max),
-                                  TRUE ~ paste0(">", speed.max))) %>%
-      arrange(vid, date)
-  }
-
-  if(country == "Sierra Leone") {
-    d <- import(file.name, setclass="tibble") %>%
-      rename(vid = PublicDeviceID,
-             date = ReceiveTime, # or gpsTime???
-             lon = Lon,
-             lat = Lat,
-             speed = Speed) %>%
-      mutate(lat = as.numeric(str_replace(lat,  ",",  ".")),
-             lon = as.numeric(str_replace(lon,  ",",  ".")),
-             date = str_sub(date, 1, 19),
-             date = ymd_hms(date),
-             speed = as.numeric(speed) * 3600/185200,
-             activity = case_when(speed < speed.min ~ paste0("<", speed.min),
-                                  speed < speed.max ~ paste0(speed.min, "-", speed.max),
-                                  TRUE ~ paste0(">", speed.max)))%>%
-      arrange(vid, date)
-  }
-
-  if(country == "Liberia") {
-    d <- import(file.name, setclass="tibble") %>%
-      rename(date = DateTime, # or gpsTime???
-             lon = Longitude,
-             lat = Latitude,
-             speed = "Speed (MPH)") %>%
-      mutate(date = ymd_hms(date),
-             lat = as.numeric(lat),
-             lon = as.numeric(lon),
-             activity = case_when(speed < speed.min ~ paste0("<", speed.min),
-                                  speed < speed.max ~ paste0(speed.min, "-", speed.max),
-                                  TRUE ~ paste0(">", speed.max))) %>%
-      arrange(vid, date)
-  }
-
-
-  d <- d %>%
-    dplyr::filter(speed <= speed.limit)
-
-
-  return(d)
-}
-
-
-vms_plot_speed <- function(d, bindwidth = 0.5, lim = speed.limit) {
-
-    d %>%
-      dplyr::select(speed, activity) %>%
-      dplyr::mutate(activity = ifelse(dplyr::between(speed, speed.min, speed.max),
-                                    "Fishing", "Not fishing")) %>%
-      tidyr::drop_na() %>%
-      ggplot() +
-      theme_bw(base_size = 16) +
-      geom_histogram (aes(x=speed, fill = activity), binwidth = 0.5) +
-      xlim(0, speed.limit)
-}
-
-
+```{r}
+# Imports data -----------------------------------------------------------------
 vms <- vms_import_data(file.in, country)
+```
 
+```{r, eval = FALSE}
+vms %>% head() %>% knitr::kable()
+```
+
+```{r}
 if(filter.by.date == "Yes"){
-vms <- vms %>%
-  dplyr::filter(between(date, ymd_hms(date.min), ymd_hms(date.max)))
+  vms <- 
+    vms %>%
+    dplyr::filter(between(date, ymd_hms(date.min), ymd_hms(date.max)))
 }
 
 ```
-## Data summary
 
+## Data summary
 
 ```{r}
 vms %>%
@@ -159,11 +114,9 @@ vms %>%
   knitr::kable()
 
 vms_plot_speed(vms)
-
 ```
 
 ## Vessel summary
-
 
 ```{r}
 

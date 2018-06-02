@@ -9,6 +9,21 @@
 vms_import_data <- function(file.name, country)
 {
 
+  if(country == "Iceland") {
+    d <-
+      readr::read_csv(file.name) %>%
+      mutate(lon = poslon * 45 / atan(1),
+             lat = poslat * 45 / atan(1),
+             heading = heading * 45 / atan(1),
+             speed = speed * 1.852) %>%
+      dplyr::rename(date = posdate,
+                    vid = mobileid) %>%
+      dplyr::arrange(vid, date) %>%
+      dplyr::mutate(activity = dplyr::case_when(speed < speed.min ~ paste0("<", speed.min),
+                                                speed < speed.max ~ paste0(speed.min, "-", speed.max),
+                                                TRUE ~ paste0(">", speed.max)))
+  }
+
   if(country == "Ghana") {
 
     d <- rio::import(file.name, setclass="tibble") %>%
@@ -66,7 +81,8 @@ vms_import_data <- function(file.name, country)
     d %>%
     dplyr::filter(speed <= speed.limit,
                   between(lon, -179, 179),
-                  between(lat, -89, 89))
+                  between(lat, -89, 89)) %>%
+    mutate(country = country)
 
 
   return(d)

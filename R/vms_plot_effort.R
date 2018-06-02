@@ -1,3 +1,9 @@
+#' Title
+#'
+#' @param rs
+#'
+#' @export
+#'
 vms_plot_effort <- function(rs) {
 
   rs <- as(rs, "SpatialPixelsDataFrame")

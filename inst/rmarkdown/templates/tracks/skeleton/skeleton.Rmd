@@ -1,0 +1,196 @@
+---
+title: "Visualization of vessel tracks"
+output:
+  html_document: default
+  word_document: default
+---
+
+## Input parameters
+
+```{r}
+# Comment ----------------------------------------------------------------------
+# THE FILE NAME TO READ IN AND THE FILE NAME OF THE STANDARDIZED DATA TO SAVE
+country <- "Iceland"  # choices "Ghana", "Liberia", "Sierra Leone", "Iceland"
+
+# Here you need to specifiy the full path name of your VMS data:
+file.name = "VMS_standardized.csv"
+
+# Export a shapefile with the track?
+export.shapefile = "Yes"   # choices "Yes" or "No"
+
+# Output path for the shapefile
+shapefile.path.name = "."
+
+# Name for the shapefile
+shapefile.name = "Vessel_tracks"
+
+# Range of speeds considered as fishing
+speed.min = 2
+speed.max = 4.5
+
+# Maximum realistic speed
+speed.limit = 15
+
+# Range of the maps (in decimal degrees)
+if (country == "Ghana"){
+lon.min = -4
+lon.max = 2
+
+lat.min = 3.0
+lat.max = 7
+}
+
+if (country == "Sierra Leone") {
+lon.min = -15
+lon.max = -12
+
+lat.min = 7
+lat.max = 10
+}
+
+if (country == "Liberia") {
+lon.min = -12
+lon.max = -10
+
+lat.min = 5.5
+lat.max = 7
+}
+
+if (country == "Iceland") {
+lon.min <- -26
+lon.max <- -14
+
+lat.min <- 63
+lat.max <- 65
+}
+
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+# Needed libaries
+library(knitr)
+library(tidyverse)
+library(lubridate)
+library(rio)
+library(sp)
+library(raster)
+library(rgdal)
+library(viridis)
+library(mapdata)
+library(ghsllr)
+```
+
+```{r, eval = FALSE}
+# Function to calculate the distance between two locations
+arcdist  <- function (lat, lon, lat1 = NULL, lon1 = NULL, scale = "nmi")
+{
+    if (is.null(lat1)) {
+        lat1 <- lon$lat
+        lon1 <- lon$lon
+        lon <- lat$lon
+        lat <- lat$lat
+    }
+    if (scale == "nmi")
+        miles <- 1.852
+    else miles <- 1
+    rad <- 6367
+    mult1 <- (rad/miles)
+    mult2 <- pi/180
+    return(mult1 * acos(sin(mult2 * lat) * sin(mult2 * lat1) +
+        cos(mult2 * lat) * cos(mult2 * lat1) * cos(mult2 * lon -
+            mult2 * lon1)))
+}
+
+vms_plot_tracks <- function(d){
+
+  m <- map_data("worldHires",
+              xlim = c(lon.min, lat.max),
+              ylim = c(lat.min, lat.max))
+
+  ids <- unique(d$vid)
+
+  for(i in ids){
+
+     plot <- d %>%
+      dplyr::filter(vid == i) %>%
+      ggplot() +
+      theme_bw(base_size = 16) +
+      geom_polygon(data = m, aes(long, lat, group = group), fill = "grey") +
+      geom_path(aes(lon, lat), colour = "grey") +
+      geom_point(aes(lon, lat, colour = speed, shape=activity), size = 1) +
+      scale_colour_viridis(option = "B", direction = -1) +
+      coord_quickmap(xlim = c(lon.min, lon.max),  ylim = c(lat.min, lat.max)) +
+      scale_x_continuous(NULL) +
+      scale_y_continuous(NULL) +
+      ggtitle(str_c("Vessel ID:", i))
+
+    print(plot)
+
+  }
+}
+
+
+# Function to create vessel tracks for each vessel
+vms_create_tracks <- function(d)
+{
+  tracks <- list()
+  ids <- unique(d$vid)
+
+  for(i in 1:length(ids)){
+
+    xy <- d %>%
+      dplyr::filter(vid == ids[i],
+                    dspeed > 0,
+                    is.finite(dspeed)) %>%
+      dplyr::select(lon, lat)
+
+    if(nrow(xy)>0){
+
+      tracks[[i]] <- Lines(list(Line(xy)), ID = ids[i])
+
+    }
+  }
+
+  k <- unlist(lapply(tracks, class)) == "Lines"
+  tracks <- tracks[k]
+  tracks <- SpatialLines(tracks, proj4string = CRS("+proj=longlat +datum=WGS84")) %>%
+    SpatialLinesDataFrame(data = data.frame(vid = ids), match.ID = FALSE)
+
+  return(tracks)
+}
+```
+
+
+```{r}
+
+ vms <- import(file.name, setclass ="tibble") %>%
+  mutate(date = ymd_hms(date),
+         dist = arcdist(lead(lat), lead(lon), lat, lon),
+         time = as.numeric(as.duration(lead(date) - date), "hours"),
+         dspeed = dist/time) %>%
+  dplyr::filter(dspeed <= speed.limit) %>%
+  mutate (activity = if_else(between(speed,
+                                     speed.min,
+                                     speed.max),
+                             "Fishing",
+                             "Not fishing"))
+
+vms_plot_tracks(vms)
+
+if(export.shapefile == "Yes"){
+
+  tr <- vms_create_tracks(vms)
+
+  writeOGR(tr,
+           dsn = shapefile.path.name,
+           layer = shapefile.name,
+           driver = "ESRI Shapefile",
+           overwrite_layer = TRUE)
+
+}
+
+```

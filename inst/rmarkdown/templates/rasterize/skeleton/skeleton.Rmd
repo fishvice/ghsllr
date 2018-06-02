@@ -1,0 +1,90 @@
+---
+title: "Rasterization of VMS data"
+output:
+  html_document: default
+  word_document: default
+---
+
+## Input parameters
+
+```{r}
+# Comment ----------------------------------------------------------------------
+# THE FILE NAME TO READ IN AND THE FILE NAME OF THE STANDARDIZED DATA TO SAVE
+country <- "Iceland"  # choices "Ghana", "Liberia", "Sierra Leone", "Iceland"
+
+# Here you need to specifiy location and file name of your standardized data:
+file.name <- "VMS_standardized.csv"
+
+# Name of file containing rasterized effort (now only number of pings)
+raster.name <- "Effort_raster.asc"
+
+# Resolution for the effort grid
+grid.resolution <- 0.05
+# Decimal degree units
+
+# Range of speeds considered as fishing
+speed.min <- 2
+speed.max <- 4.5
+
+# Range of the maps (in decimal degrees)
+if (country == "Ghana"){
+lon.min <- -4
+lon.max <- 2
+
+lat.min <- 3.0
+lat.max <- 7
+}
+
+if (country == "Sierra Leone") {
+lon.min <- -15
+lon.max <- -12
+
+lat.min <- 6
+lat.max <- 10
+}
+
+if (country == "Liberia") {
+lon.min <- -12
+lon.max <- -10
+
+lat.min <- 5.5
+lat.max <- 7
+}
+
+if (country == "Iceland") {
+lon.min <- -26
+lon.max <- -14
+
+lat.min <- 63
+lat.max <- 65
+}
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+# Needed libaries
+library(sp)
+library(raster)
+library(rgdal)
+
+library(tidyverse)
+library(lubridate)
+library(rio)
+
+library(viridis)
+library(mapdata)
+library(ghsllr)
+```
+
+
+```{r}
+vms <- import(file.name, setclass ="tibble")
+eff <- vms_compute_effort(vms, grid.resolution, speed.min, speed.max)
+vms_plot_effort(eff)
+
+writeRaster(eff, file = raster.name, format = "ascii", overwrite = TRUE)
+
+```

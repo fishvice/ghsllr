@@ -1,3 +1,12 @@
+#' Title
+#'
+#' @param d
+#' @param res
+#' @param speed.min
+#' @param speed.max
+#'
+#' @export
+#'
 vms_compute_effort <- function(d, res, speed.min, speed.max)
 {
 

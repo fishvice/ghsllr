@@ -3,3 +3,10 @@
 .RData
 .Ruserdata
 *.Rproj
+*.asc
+*.csv
+*.html
+Vessel_tracks.dbf
+Vessel_tracks.prj
+Vessel_tracks.shp
+Vessel_tracks.shx
