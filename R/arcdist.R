@@ -1,10 +1,10 @@
 #' Title
 #'
-#' @param lat
-#' @param lon
-#' @param lat1
-#' @param lon1
-#' @param scale
+#' @param lat XXX
+#' @param lon XXX
+#' @param lat1 XXX
+#' @param lon1 XXX
+#' @param scale XXX
 #'
 #' @export
 #'

@@ -1,7 +1,7 @@
 # Function to create vessel tracks for each vessel
 #' Title
 #'
-#' @param d
+#' @param d XXX
 #'
 #' @export
 #'
@@ -20,7 +20,7 @@ vms_create_tracks <- function(d)
 
     if(nrow(xy)>0){
 
-      tracks[[i]] <- sp::Lines(list(Line(xy)), ID = ids[i])
+      tracks[[i]] <- sp::Lines(list(sp::Line(xy)), ID = ids[i])
 
     }
   }

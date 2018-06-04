@@ -2,16 +2,22 @@
 % Please edit documentation in R/vms_plot_speed.R
 \name{vms_plot_speed}
 \alias{vms_plot_speed}
-\title{Title}
+\title{Histogram of speed limits}
 \usage{
-vms_plot_speed(d, bindwidth = 0.5, lim = speed.limit)
+vms_plot_speed(d, bindwidth = 0.5, speed.limit = 15)
 }
 \arguments{
-\item{lim}{}
+\item{d}{A standardized VMS data frame}
+
+\item{bindwidth}{The binwidth of the histogram}
+
+\item{speed.limit}{A value that indicates maximum plausable speed. Any speed
+higher than this valule will not be plotted}
 }
 \value{
 dataframe
 }
 \description{
-Title
+A wrapper for a histogram plot. It is expected that the dataframe contains variable labelled "speed". User can control the bindwidth and cut off
+inplausable speed in the plot
 }

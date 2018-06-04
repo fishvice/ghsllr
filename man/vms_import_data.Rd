@@ -2,16 +2,26 @@
 % Please edit documentation in R/vms_import_data.R
 \name{vms_import_data}
 \alias{vms_import_data}
-\title{Title}
+\title{Standardize vms data}
 \usage{
-vms_import_data(file.name, country)
+vms_import_data(file.name, country, lon.min, lon.max, lat.min, lat.max)
 }
 \arguments{
-\item{country}{}
+\item{file.name}{XXX}
+
+\item{country}{XXX}
+
+\item{lon.min}{XXX}
+
+\item{lon.max}{XXX}
+
+\item{lat.min}{XXX}
+
+\item{lat.max}{XXX}
 }
 \value{
 dataframe
 }
 \description{
-Title
+XXX
 }

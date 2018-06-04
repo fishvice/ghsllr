@@ -11,10 +11,15 @@ Depends:
 Imports:
     dplyr,
     ggplot2,
+    lubridate,
+    magrittr,
     raster,
+    readr,
+    rio,
     sp,
     stringr,
-    tidyr
+    tidyr,
+    viridis
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true

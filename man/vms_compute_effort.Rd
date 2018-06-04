@@ -7,7 +7,13 @@
 vms_compute_effort(d, res, speed.min, speed.max)
 }
 \arguments{
-\item{speed.max}{}
+\item{d}{XXX}
+
+\item{res}{XXX}
+
+\item{speed.min}{XXX}
+
+\item{speed.max}{XXX}
 }
 \description{
 Title

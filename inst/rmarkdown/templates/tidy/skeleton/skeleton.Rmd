@@ -73,7 +73,7 @@ library(ghsllr)
 
 ```{r}
 # Imports data -----------------------------------------------------------------
-vms <- vms_import_data(file.in, country)
+vms <- vms_import_data(file.in, country, lon.min, lon.max, lat.min, lat.max)
 ```
 
 ```{r, eval = FALSE}
@@ -96,8 +96,9 @@ vms %>%
   mutate(day = day(date)) %>%
   summarise(Date.minimum = min(date, na.rm = TRUE),
             Date.maximum = max(date, na.rm = TRUE),
-            Date.missing = sum(is.na(date)),
+            Date.range = lubridate::as_date(Date.maximum) - lubridate::as_date(Date.minimum) + 1,
             Date.distinct = n_distinct(day),
+            Date.missing = sum(is.na(date)),
             Longitude.minimum = min(lon, na.rm = TRUE),
             Longitude.maximum = max(lon, na.rm = TRUE),
             Longitude.missing = sum(is.na(lon)),
@@ -107,7 +108,7 @@ vms %>%
             Speed.minimum = min(speed, na.rm = TRUE),
             Speed.maximum = max(speed, na.rm = TRUE),
             Speed.missing = sum(is.na(speed)),
-            Vessel.distinct = n_distinct(vid))%>%
+            Vessel.distinct = n_distinct(vid)) %>% 
   mutate_all(as.character) %>%
   gather(variable, value) %>%
   separate(variable, c("variable", "statistics")) %>%
@@ -129,7 +130,7 @@ vms %>%
   knitr::kable()
 
 vms %>%
-  dplyr::select(vid, date, lon, lat, speed) %>%
+  dplyr::select(vid, date, lon, lat, speed, fishing) %>%
   mutate(date = as.character(date)) %>%
   write_csv(file.out)
 

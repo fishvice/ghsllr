@@ -7,7 +7,15 @@
 arcdist(lat, lon, lat1 = NULL, lon1 = NULL, scale = "nmi")
 }
 \arguments{
-\item{scale}{}
+\item{lat}{XXX}
+
+\item{lon}{XXX}
+
+\item{lat1}{XXX}
+
+\item{lon1}{XXX}
+
+\item{scale}{XXX}
 }
 \description{
 Title

@@ -7,7 +7,7 @@
 vms_plot_effort(rs)
 }
 \arguments{
-\item{rs}{}
+\item{rs}{XXX}
 }
 \description{
 Title

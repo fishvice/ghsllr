@@ -1,9 +1,9 @@
 #' Title
 #'
-#' @param d
-#' @param res
-#' @param speed.min
-#' @param speed.max
+#' @param d XXX
+#' @param res XXX
+#' @param speed.min XXX
+#' @param speed.max XXX
 #'
 #' @export
 #'
@@ -14,8 +14,9 @@ vms_compute_effort <- function(d, res, speed.min, speed.max)
 
   d <- d %>%
     tidyr::drop_na() %>%
-    dplyr::filter(speed >= speed.min,
-                  speed <= speed.max) %>%
+    #dplyr::filter(speed >= speed.min,
+    #              speed <= speed.max) %>%
+    dplyr::filter(fishing) %>%
     dplyr::select(lon, lat)
 
   # Convert to SpatialPoints
@@ -27,7 +28,7 @@ vms_compute_effort <- function(d, res, speed.min, speed.max)
                 xmx = lon.max,
                 ymn = lat.min,
                 ymx = lat.max,
-                res = grid.resolution,
+                res = res,
                 crs = "+proj=longlat")
 
   rst <- raster::rasterize(d, rst, field = 1, fun = "count")

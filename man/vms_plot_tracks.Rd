@@ -7,7 +7,7 @@
 vms_plot_tracks(d)
 }
 \arguments{
-\item{d}{}
+\item{d}{XXX}
 }
 \description{
 Title
