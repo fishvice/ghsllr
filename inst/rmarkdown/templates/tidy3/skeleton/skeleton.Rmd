@@ -11,7 +11,7 @@ params:
     label: 'Country:'
     value: Iceland
   input:
-    input: text
+    input: file
     label: 'Input file name:'
     value: iceland_vms.csv
   output:
