@@ -1,7 +1,38 @@
 ---
-title: "VMS cleanup and summary"
+title: "VMS cleanup and summary - interactive"
+params:
+  country:
+    choices:
+    - Iceland
+    - Ghana
+    - Liberia
+    - Sierra Leone
+    input: select
+    label: 'Country:'
+    value: Iceland
+  input:
+    input: file
+    label: 'Input file name:'
+    value: iceland_vms.csv
+  output:
+    input: text
+    label: 'Output file name:'
+    value: vms_standardized.csv
+  speed.min:
+    input: numeric
+    label: 'Minimum fishing speed:'
+    value: 2
+  speed.max:
+    input: numeric
+    label: 'Maximum fishing speed:'
+    value: 4.5
+  speed.limit:
+    input: numeric
+    label: 'Maximum plausable speed:'
+    value: 15
 output:
   html_document: default
+  word_document: default
 ---
 
 ## Preamble
@@ -20,30 +51,31 @@ produces a clean VMS dataset with the same column names so it can be used with t
 ## Input parameters (user specification)
 
 ```{r}
+params
 # NOTE THAT ANYTHING THAT STARTS WITH A "#" IN THE CODE SECTION MEANS COMMENT
 
 # YOUR COUNTRY NAME ------------------------------------------------------------
 # Current choices: "Ghana", "Liberia", "Sierra Leone", "Iceland"
-country <- "Iceland"  
+country <- params$country
 
 # THE FILE NAME TO READ IN AND THE FILE NAME OF THE STANDARDIZED DATA TO SAVE --
 
 # Path to and file name to VMS data file you want to analyze
 # If the country data is Iceland it does not matter what you typ in here: it will be ignored
-file.in = "iceland_vms.csv"
-
+#file.in = "iceland_vms.csv"
+file.in <- params$input
 # The path and the file name for the output file (standardized format)
 file.out = "VMS_standardized.csv"
 
 # THE SPEED RANGE TO CONSIDERED AS FISHING AND THE MAXIMUM REALISTIC SPEED -----
 #  Units are in knots
-speed.min = 2
-speed.max = 4.5
+speed.min = params$speed.min
+speed.max = params$speed.max
 
 # Maximum realistic speed
 #  NOTE: Julian - I am not sure if we should remove these points from
 #        the standardized file
-speed.limit = 15
+speed.limit = params$speed.limit
 
 # DATE RANGE TO INCLUDE IN THE ANALYSIS ----------------------------------------
 #      Dates outside this range will be removed before the output files is saved
