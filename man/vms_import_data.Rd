@@ -4,20 +4,12 @@
 \alias{vms_import_data}
 \title{Standardize vms data}
 \usage{
-vms_import_data(file.name, country, lon.min, lon.max, lat.min, lat.max)
+vms_import_data(file.name, country)
 }
 \arguments{
 \item{file.name}{XXX}
 
 \item{country}{XXX}
-
-\item{lon.min}{XXX}
-
-\item{lon.max}{XXX}
-
-\item{lat.min}{XXX}
-
-\item{lat.max}{XXX}
 }
 \value{
 dataframe
