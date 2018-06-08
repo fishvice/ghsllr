@@ -4,12 +4,10 @@
 \alias{vms_import_data}
 \title{Standardize vms data}
 \usage{
-vms_import_data(file.name, country)
+vms_import_data(file.name)
 }
 \arguments{
 \item{file.name}{XXX}
-
-\item{country}{XXX}
 }
 \value{
 dataframe

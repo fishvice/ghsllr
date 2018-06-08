@@ -3,21 +3,53 @@
 #' XXX
 #'
 #' @param file.name XXX
-#' @param country XXX
 #'
 #' @return dataframe
 #' @export
 #'
-vms_import_data <- function(file.name, country)
+vms_import_data <- function(file.name)
 {
 
-  if(!country %in% c("Iceland", "Ghana", "Liberia", "Sierra Leone"))
-    stop('The only vms country formats supported so far are: "Iceland", "Ghana", "Liberia", "Sierra Leone"')
+  #if(!country %in% c("Iceland", "Ghana", "Liberia", "Sierra Leone"))
+  #  stop('The only vms country formats supported so far are: "Iceland", "Ghana", "Liberia", "Sierra Leone"')
 
 
   d <-
     rio::import(file.name, setclass="tibble") %>%
     dplyr::rename_all(., tolower)
+
+  cn <- colnames(d) %>% stringr::str_trim()
+
+  # Guess country
+
+  d$country <- vms_guess_country(cn)
+
+  # Convert icelandic data -----------------------------------------------------
+  if(any(cn %in% c("trailid", "mobileid", "poslat", "poslon",
+                   "posdate", "recdate"))) {
+    d <-
+      d %>%
+      dplyr::mutate(poslon = poslon * 45 / atan(1),
+                    poslat = poslat * 45 / atan(1),
+                    heading = heading * 45 / atan(1),
+                    speed = speed * 1.852)
+  }
+
+  # Convert sierra leone speed
+  if(all(cn %in%  c("receivetime", "gpstime", "lat", "lon", "speed",
+                    "gpsquality", "publicdeviceid", "type"))) {
+    d <-
+      d %>%
+      dplyr::mutate(speed = as.numeric(speed) * 3600/185200)
+  }
+
+  # convert liberia speed
+  if(any(cn %in% c("speed (mph)"))) {
+    d <-
+      d %>%
+      dplyr::mutate(`speed (mph)` = 0.868976 * `speed (mph)`)
+  }
+
   colnames(d) <- stringr::str_trim(colnames(d))
   colnames(d) <- vms_standardize_names(colnames(d))
 
@@ -29,55 +61,17 @@ vms_import_data <- function(file.name, country)
     d$vid <- file.name
   }
   if(class(d$vid) != "character")   d$vid <-   as.character(d$vid)
-
-
-  if(country == "Iceland") {
-    d <-
-      d %>%
-      dplyr::mutate(lon = lon * 45 / atan(1),
-                    lat = lat * 45 / atan(1),
-                    heading = heading * 45 / atan(1),
-                    speed = speed * 1.852)
-                    #time = lubridate::ymd_hms(time),
-                    #recdate = lubridate::ymd_hms(recdate),
-                    #vid = as.character(vid)) %>%
-      #dplyr::arrange(vid, time)
+  if(!any(colnames(d) %in% "heading")) {
+    d$heading <- NA_character_
   }
-
-  if(country == "Ghana") {
-    d <-
-      d #%>%
-      #dplyr::mutate(#time = lubridate::dmy_hm(time),
-      #              lon = as.numeric(lon),
-      #              lat = as.numeric(lat),
-      #              speed = as.numeric(speed))
-  }
-
-  if(country == "Sierra Leone") {
-    d <-
-      d %>%
-      dplyr::mutate(#lat = as.numeric(stringr::str_replace(lat,  ",",  ".")),
-                    #lon = as.numeric(stringr::str_replace(lon,  ",",  ".")),
-                    time = stringr::str_sub(time, 1, 19),
-                    #time = lubridate::ymd_hms(time),
-                    speed = speed * 3600/185200)
-  }
-
-  if(country == "Liberia") {
-    d <-
-      d #%>%
-      #dplyr::mutate(#time = lubridate::ymd_hms(time),
-      #              lat = as.numeric(lat),
-      #              lon = as.numeric(lon))
-  }
-
+  if(class(d$heading) != "character") d$heading <- as.character(d$heading)
 
   d <-
     d %>%
-    #dplyr::filter(dplyr::between(lon, -179.99999999999, 179.99999999999),
-    #              dplyr::between(lat, -89.99999999999, 89.99999999999)) %>%
-    dplyr::mutate(time2 = anytime::anytime(time)) #%>%
-    #arrange(vid, time2)
+    dplyr::filter(dplyr::between(lon, -179.9999, 179.9999),
+                  dplyr::between(lat, -89.9999, 89.9999)) %>%
+    dplyr::mutate(time = vms_convert_to_time(time.txt)) %>%
+    dplyr::arrange(vid, time)
 
   return(d)
 }

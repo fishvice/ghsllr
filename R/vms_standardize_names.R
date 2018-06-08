@@ -33,7 +33,7 @@ vms_standardize_names <- function(cn) {
   cn.eez <- c("eez", "eez1")
 
   i <- cn %in% cn.time
-  cn[i] <- "time"
+  cn[i] <- "time.txt"
 
   i <- cn %in% cn.lon
   cn[i] <- "lon"
