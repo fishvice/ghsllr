@@ -32,7 +32,7 @@ country <- "Iceland"
 file.in = "ftp://ftp.hafro.is/pub/reiknid/einar/vms/iceland_vms.csv"
 
 # The (path and the) file name for the output file (standardized format)
-file.out = "VMS_standardized.csv"
+file.out = "data-tidy/VMS_standardized.csv"
 
 # THE SPEED RANGE TO CONSIDERED AS FISHING AND THE MAXIMUM REALISTIC SPEED -----
 #  Units are in knots

@@ -13,7 +13,7 @@ output:
 country <- "Iceland"  # choices "Ghana", "Liberia", "Sierra Leone", "Iceland"
 
 # Here you need to specifiy the full path name of your VMS data:
-file.name = "VMS_standardized.csv"
+file.name = "data-tidy/VMS_standardized.csv"
 
 # Export a shapefile with the track?
 export.shapefile = "Yes"   # choices "Yes" or "No"
@@ -22,7 +22,7 @@ export.shapefile = "Yes"   # choices "Yes" or "No"
 shapefile.path.name = "."
 
 # Name for the shapefile
-shapefile.name = "Vessel_tracks"
+shapefile.name = "data-products/Vessel_tracks"
 
 # Range of speeds considered as fishing
 speed.min = 2
