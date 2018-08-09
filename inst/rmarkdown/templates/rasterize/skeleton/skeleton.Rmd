@@ -82,7 +82,9 @@ library(ghsllr)
 
 ```{r}
 vms <- readr::read_csv(file.name)
-eff <- vms_compute_effort(vms, grid.resolution, speed.min, speed.max)
+eff <- vms_compute_effort(vms, grid.resolution,
+                          lon.min = lon.min, lon.max = lon.max,
+                          lat.min = lat.min, lat.max = lat.max)
 vms_plot_effort(eff)
 
 writeRaster(eff, file = raster.name, format = "ascii", overwrite = TRUE)
