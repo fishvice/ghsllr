@@ -1,103 +1,37 @@
-#' Standardize vms data
+#' @title Import and standardize vms data
 #'
-#' XXX
+#' @description The function makes an attempt to import data and subsequently
+#' standardize names and units of VMS data from the country specified. The
+#' functions also filters out any data with non-plausible longitudes (those not
+#' between -179.9 and 179.9 degrees) and latitudes (those not between -89.9 and
+#' 89.9 degrees).
 #'
-#' @param file.name XXX
-#' @param country XXX
-#' @param lon.min XXX
-#' @param lon.max XXX
-#' @param lat.min XXX
-#' @param lat.max XXX
+#' @param file.name A character vector specifying the path and the filename of
+#' the VMS data to import and standardize.
+#' @param country A character vector specifying country of origin of the data.
+#' Current choices are "Ghana", "Liberia", "Sierra Leone" and "Iceland".
 #'
 #' @return dataframe
 #' @export
 #'
-vms_import_data <- function(file.name, country,
-                            lon.min,
-                            lon.max,
-                            lat.min,
-                            lat.max)
-{
+vms_import_data <- function(file.name, country) {
 
-  if(country == "Iceland") {
-    d <-
-      readr::read_csv(file.name) %>%
-      dplyr::rename(lon = poslon,
-                    lat = poslat,
-                    vid = mobileid,
-                    date = posdate) %>%
-      dplyr::mutate(lon = lon * 45 / atan(1),
-                    lat = lat * 45 / atan(1),
-                    heading = heading * 45 / atan(1),
-                    speed = speed * 1.852) %>%
-      dplyr::arrange(vid, date) %>%
-      dplyr::mutate(activity = dplyr::case_when(speed < speed.min ~ paste0("<", speed.min),
-                                                speed < speed.max ~ paste0(speed.min, "-", speed.max),
-                                                TRUE ~ paste0(">", speed.max)))
+  if(!country %in% c("Iceland", "Ghana", "Liberia", "Sierra Leone")) {
+    stop('country specification needs to be one of "Ghana", "Liberia", "Sierra Leone" or "Iceland"')
   }
 
-  if(country == "Ghana") {
+  if(!file.exists(file.name)) stop(paste0('path and file name: "', file.name, '"not found'))
 
-    d <-
-      rio::import(file.name, setclass="tibble") %>%
-      dplyr::rename(vid = Mobile,
-                    date = Date,
-                    lon = Longitude,
-                    lat = Latitude,
-                    speed = Speed) %>%
-      dplyr::mutate(date = lubridate::dmy_hm(date),
-                    lon = as.numeric(lon),
-                    lat = as.numeric(lat),
-                    speed = as.numeric(speed),
-                    activity = dplyr::case_when(speed < speed.min ~ paste0("<", speed.min),
-                                                speed < speed.max ~ paste0(speed.min, "-", speed.max),
-                                                TRUE ~ paste0(">", speed.max))) %>%
-      dplyr::arrange(vid, date)
-  }
-
-  if(country == "Sierra Leone") {
-    d <- rio::import(file.name, setclass="tibble") %>%
-      dplyr::rename(vid = PublicDeviceID,
-                    date = gpsTime, # Check
-                    lon = Lon,
-                    lat = Lat,
-                    speed = Speed) %>%
-      dplyr::mutate(lat = as.numeric(stringr::str_replace(lat,  ",",  ".")),
-                    lon = as.numeric(stringr::str_replace(lon,  ",",  ".")),
-                    date = stringr::str_sub(date, 1, 19),
-                    date = lubridate::ymd_hms(date),
-                    speed = as.numeric(speed) * 3600/185200,
-                    activity = dplyr::case_when(speed < speed.min ~ paste0("<", speed.min),
-                                                speed < speed.max ~ paste0(speed.min, "-", speed.max),
-                                                TRUE ~ paste0(">", speed.max)))%>%
-      dplyr::arrange(vid, date)
-  }
-
-  if(country == "Liberia") {
-    d <-
-      rio::import(file.name, setclass="tibble") %>%
-      dplyr::rename(date = DateTime, # or gpsTime???
-                    lon = Longitude,
-                    lat = Latitude,
-                    speed = "Speed (MPH)") %>%
-      dplyr::mutate(date = lubridate::ymd_hms(date),
-                    lat = as.numeric(lat),
-                    lon = as.numeric(lon),
-                    activity = dplyr::case_when(speed < speed.min ~ paste0("<", speed.min),
-                                                speed < speed.max ~ paste0(speed.min, "-", speed.max),
-                                                TRUE ~ paste0(">", speed.max))) %>%
-      dplyr::arrange(vid, date)
-  }
-
+  if(country == "Iceland")      d <- vms_import_data_is(file.name)
+  if(country == "Ghana")        d <- vms_import_data_gh(file.name)
+  if(country == "Sierra Leone") d <- vms_import_data_sl(file.name)
+  if(country == "Liberia")      d <- vms_import_data_lr(file.name)
 
   d <-
     d %>%
+    dplyr::mutate(country = country) %>%
     dplyr::filter(dplyr::between(lon, -179.99999999999, 179.99999999999),
-                  dplyr::between(lat, -89.99999999999, 89.99999999999)) %>%
-    dplyr::mutate(fishing = ifelse(dplyr::between(speed, speed.min, speed.max),
-                                   TRUE, FALSE),
-                  country = country)
-
+                  dplyr::between(lat, -89.99999999999, 89.99999999999))
 
   return(d)
 }

@@ -1,12 +1,13 @@
 # Function to create vessel tracks for each vessel
 #' Title
 #'
-#' @param d XXX
+#' @param d Standardized vms dataframe
+#' @param file.name A character vector that
 #'
 #' @export
-#'
-vms_create_tracks <- function(d)
-{
+#' @export
+vms_export_tracks <- function(d, file.name = "data-products/Vessel_tracks") {
+
   tracks <- list()
   ids <- unique(d$vid)
 
@@ -31,5 +32,10 @@ vms_create_tracks <- function(d)
     sp::SpatialLines(tracks, proj4string = sp::CRS("+proj=longlat +datum=WGS84")) %>%
     sp::SpatialLinesDataFrame(data = data.frame(vid = ids), match.ID = FALSE)
 
-  return(tracks)
+  rgdal::writeOGR(tracks,
+                  dsn = ".",
+                  layer = shapefile.name,
+                  driver = "ESRI Shapefile",
+                  overwrite_layer = TRUE)
+
 }

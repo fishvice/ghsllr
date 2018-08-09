@@ -2,26 +2,24 @@
 % Please edit documentation in R/vms_import_data.R
 \name{vms_import_data}
 \alias{vms_import_data}
-\title{Standardize vms data}
+\title{Import and standardize vms data}
 \usage{
-vms_import_data(file.name, country, lon.min, lon.max, lat.min, lat.max)
+vms_import_data(file.name, country)
 }
 \arguments{
-\item{file.name}{XXX}
+\item{file.name}{A character vector specifying the path and the filename of
+the VMS data to import and standardize.}
 
-\item{country}{XXX}
-
-\item{lon.min}{XXX}
-
-\item{lon.max}{XXX}
-
-\item{lat.min}{XXX}
-
-\item{lat.max}{XXX}
+\item{country}{A character vector specifying country of origin of the data.
+Current choices are "Ghana", "Liberia", "Sierra Leone" and "Iceland".}
 }
 \value{
 dataframe
 }
 \description{
-XXX
+The function makes an attempt to import data and subsequently
+standardize names and units of VMS data from the country specified. The
+functions also filters out any data with non-plausible longitudes (those not
+between -179.9 and 179.9 degrees) and latitudes (those not between -89.9 and
+89.9 degrees).
 }
