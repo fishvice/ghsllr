@@ -81,7 +81,7 @@ library(ghsllr)
 
 
 ```{r}
-vms <- import(file.name, setclass ="tibble")
+vms <- readr::read_csv(file.name)
 eff <- vms_compute_effort(vms, grid.resolution, speed.min, speed.max)
 vms_plot_effort(eff)
 

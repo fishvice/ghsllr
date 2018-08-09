@@ -2,12 +2,16 @@
 #'
 #' @param d XXX
 #' @param res XXX
-#' @param speed.min XXX
-#' @param speed.max XXX
+#' @param lon.min XXX
+#' @param lon.max XXX
+#' @param lat.min XXX
+#' @param lat.max XXX
 #'
 #' @export
 #'
-vms_compute_effort <- function(d, res, speed.min, speed.max)
+vms_compute_effort <- function(d, res,
+                               lon.min = -179, lon.max = 179,
+                               lat.min = -89,  lat.max = 89)
 {
 
   if(missing(res)) stop("You need to provide the resolution")
@@ -24,12 +28,13 @@ vms_compute_effort <- function(d, res, speed.min, speed.max)
   sp::proj4string(d) <- "+proj=longlat"
 
   # Rasterization
-  rst <- raster::raster(xmn = lon.min,
-                xmx = lon.max,
-                ymn = lat.min,
-                ymx = lat.max,
-                res = res,
-                crs = "+proj=longlat")
+  rst <-
+    raster::raster(xmn = lon.min,
+                   xmx = lon.max,
+                   ymn = lat.min,
+                   ymx = lat.max,
+                   res = res,
+                   crs = "+proj=longlat")
 
   rst <- raster::rasterize(d, rst, field = 1, fun = "count")
 

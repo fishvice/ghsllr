@@ -4,16 +4,21 @@
 \alias{vms_compute_effort}
 \title{Title}
 \usage{
-vms_compute_effort(d, res, speed.min, speed.max)
+vms_compute_effort(d, res, lon.min = -179, lon.max = 179, lat.min = -89,
+  lat.max = 89)
 }
 \arguments{
 \item{d}{XXX}
 
 \item{res}{XXX}
 
-\item{speed.min}{XXX}
+\item{lon.min}{XXX}
 
-\item{speed.max}{XXX}
+\item{lon.max}{XXX}
+
+\item{lat.min}{XXX}
+
+\item{lat.max}{XXX}
 }
 \description{
 Title
