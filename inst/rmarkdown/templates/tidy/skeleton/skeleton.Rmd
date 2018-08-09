@@ -29,7 +29,7 @@ country <- "Iceland"
 # THE FILE NAME TO READ IN AND THE FILE NAME OF THE STANDARDIZED DATA TO SAVE --
 
 # Path to and file name to VMS data file you want to analyze
-file.in = "ftp://ftp.hafro.is/pub/reiknid/einar/vms/iceland_vms.csv"
+file.in = "data-raw/iceland_vms.csv"
 
 # The (path and the) file name for the output file (standardized format)
 file.out = "data-tidy/VMS_standardized.csv"
