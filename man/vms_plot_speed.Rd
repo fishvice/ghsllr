@@ -4,20 +4,23 @@
 \alias{vms_plot_speed}
 \title{Histogram of speed limits}
 \usage{
-vms_plot_speed(d, bindwidth = 0.5, speed.limit = 15)
+vms_plot_speed(d, bindwidth = 0.5, max.speed = 15)
 }
 \arguments{
 \item{d}{A standardized VMS data frame}
 
-\item{bindwidth}{The binwidth of the histogram}
+\item{bindwidth}{The binwidth of the histogram, default is set to 0.5}
 
-\item{speed.limit}{A value that indicates maximum plausable speed. Any speed
-higher than this valule will not be plotted}
+\item{max.speed}{A value that indicates maximum plausable speed. Any speed
+higher than this value will be assigned to this value and appear as such
+in the plot}
 }
 \value{
-dataframe
+a ggplot2 object
 }
 \description{
-A wrapper for a histogram plot. It is expected that the dataframe contains variable labelled "speed". User can control the bindwidth and cut off
-inplausable speed in the plot
+A wrapper for a histogram plot. It is expected that the dataframe contains
+variable labelled "speed". User can control the bindwidth and cut off
+inplausable speed in the plot. If varible "fishing" is available in the
+input dataframe the histogram is plotted with colour coding of activity.
 }

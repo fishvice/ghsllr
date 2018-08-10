@@ -1,7 +1,8 @@
 Package: ghsllr
 Type: Package
 Title: What the Package Does (Title Case)
-Version: 0.1.0
+Date: 2018-08-10
+Version: 0.2.0
 Author: Who wrote it
 Maintainer: The package maintainer <yourself@somewhere.net>
 Description: More about what it does (maybe more than one line)
@@ -15,10 +16,12 @@ Imports:
     magrittr,
     raster,
     readr,
+    rgdal,
     rio,
     sp,
     stringr,
     tidyr,
+    utils,
     viridis
 License: GPL (>= 2)
 Encoding: UTF-8
