@@ -34,7 +34,7 @@ vms_export_tracks <- function(d, file.name = "data-products/Vessel_tracks") {
 
   rgdal::writeOGR(tracks,
                   dsn = ".",
-                  layer = shapefile.name,
+                  layer = file.name,
                   driver = "ESRI Shapefile",
                   overwrite_layer = TRUE)
 
