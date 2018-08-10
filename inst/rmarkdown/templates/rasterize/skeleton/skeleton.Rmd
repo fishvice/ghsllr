@@ -8,56 +8,28 @@ output:
 ## Input parameters
 
 ```{r}
-# Comment ----------------------------------------------------------------------
-# THE FILE NAME TO READ IN AND THE FILE NAME OF THE STANDARDIZED DATA TO SAVE
-country <- "Iceland"  # choices "Ghana", "Liberia", "Sierra Leone", "Iceland"
-
-# Here you need to specifiy location and file name of your standardized data:
+# FILE NAMES -------------------------------------------------------------------
+#
+# Path and file name of your standardized VMS data
 file.name <- "data-tidy/VMS_standardized.csv"
-
-# Name of file containing rasterized effort (now only number of pings)
+#
+# Path and file name of rasterized data to be exported (can then be imported
+#      into QGIS)
 raster.name <- "data-products/Effort_raster.asc"
 
-# Resolution for the effort grid
-grid.resolution <- 0.05
-# Decimal degree units
+# FILTER VALUES ----------------------------------------------------------------
+# The standardized VMS file will be filtered according to these specifications
+#
+# Range of dates to analyze (have to be of the format YYYY-MM-DD HH:MM:SS)
+date.lim = c("1901-01-01 00:00:00", "2100-12-31 23:59:59")
 
+# CATEGORIZATION ---------------------------------------------------------------
 # Range of speeds considered as fishing
-speed.min <- 2
-speed.max <- 4.5
+fishing.lim <- c(2, 4.5)
 
-# Range of the maps (in decimal degrees)
-if (country == "Ghana"){
-lon.min <- -4
-lon.max <- 2
-
-lat.min <- 3.0
-lat.max <- 7
-}
-
-if (country == "Sierra Leone") {
-lon.min <- -15
-lon.max <- -12
-
-lat.min <- 6
-lat.max <- 10
-}
-
-if (country == "Liberia") {
-lon.min <- -12
-lon.max <- -10
-
-lat.min <- 5.5
-lat.max <- 7
-}
-
-if (country == "Iceland") {
-lon.min <- -26
-lon.max <- -14
-
-lat.min <- 63
-lat.max <- 65
-}
+# GRAPH RESOLUTIONS ------------------------------------------------------------
+#   Resolution for the effort raster
+grid.lim <- c(0.05, 0.05)
 ```
 
 ```{r setup, include=FALSE}
@@ -66,25 +38,23 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 ```{r}
 # Needed libaries
-library(sp)
-library(raster)
-library(rgdal)
-
-library(tidyverse)
-library(lubridate)
-library(rio)
-
-library(viridis)
 library(mapdata)
+library(tidyverse)
 library(ghsllr)
 ```
 
 
 ```{r}
 vms <- readr::read_csv(file.name)
-eff <- vms_compute_effort(vms, grid.resolution, speed.min, speed.max)
-vms_plot_effort(eff)
-
-writeRaster(eff, file = raster.name, format = "ascii", overwrite = TRUE)
-
+eff <- 
+  vms %>% 
+  vms_filter_data(speed.lim = fishing.lim,
+                  date.lim = date.lim) %>% 
+  vms_rasterize(grid.lim)
+vms_plot_raster(eff)
 ```
+
+```{r}
+eff %>% vms_export_raster(raster.name)
+```
+

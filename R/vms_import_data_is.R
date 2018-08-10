@@ -1,4 +1,3 @@
-#' @export
 vms_import_data_is <- function(file.name) {
   d <-
     readr::read_csv(file.name) %>%

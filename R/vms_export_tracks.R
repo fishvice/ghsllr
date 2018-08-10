@@ -13,17 +13,17 @@ vms_export_tracks <- function(d, file.name = "data-products/Vessel_tracks") {
 
   for(i in 1:length(ids)){
 
-    xy <- d %>%
+    xy <-
+      d %>%
       dplyr::filter(vid == ids[i],
                     dspeed > 0,
                     is.finite(dspeed)) %>%
       dplyr::select(lon, lat)
 
-    if(nrow(xy)>0){
-
+    if(nrow(xy) > 0) {
       tracks[[i]] <- sp::Lines(list(sp::Line(xy)), ID = ids[i])
-
     }
+
   }
 
   k <- unlist(lapply(tracks, class)) == "Lines"

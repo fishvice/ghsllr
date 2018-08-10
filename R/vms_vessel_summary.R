@@ -1,4 +1,13 @@
+#' Summarise vms data by vessel
+#'
+#' Provides some summary statistics on key variables of the imported and
+#' standarized vms data by vessel
+#'
+#' @param d A standardized vms dataframe
+#'
+#' @return A dataframe
 #' @export
+#'
 vms_vessel_summary <- function(d) {
   d %>%
     dplyr::mutate(day = lubridate::day(date)) %>%
@@ -16,8 +25,7 @@ vms_vessel_summary <- function(d) {
                      Latitude.missing = sum(is.na(lat)),
                      Speed.minimum = min(speed, na.rm = TRUE),
                      Speed.maximum = max(speed, na.rm = TRUE),
-                     Speed.missing = sum(is.na(speed)),
-                     Vessel.distinct = dplyr::n_distinct(vid)) %>%
+                     Speed.missing = sum(is.na(speed))) %>%
     dplyr::mutate_all(as.character) %>%
     tidyr::gather(variable, value, -vid) %>%
     tidyr::separate(variable, c("variable", "statistics")) %>%

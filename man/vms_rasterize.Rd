@@ -4,12 +4,12 @@
 \alias{vms_rasterize}
 \title{Title}
 \usage{
-vms_rasterize(d, res)
+vms_rasterize(d, grid.lim)
 }
 \arguments{
 \item{d}{XXX}
 
-\item{res}{XXX}
+\item{grid.lim}{XXX}
 }
 \description{
 Title

@@ -1,14 +1,12 @@
 ---
-title: "VMS cleanup and summary"
+title: "VMS import and standardization"
 output:
   html_document: default
 ---
 
 ## Preamble
 
-The code in this Rmarkdown document imports some vms data
-
-produces a clean VMS dataset with the same column names so it can be used with the other Rmarkdown documents.  The output format includes the following five columns:
+The code in this Rmarkdown document imports some vms data and produces a clean VMS dataset with the same column names so it can be used with the other Rmarkdown documents.  The output format includes the following five columns:
 
 * vid - vessel ID
 * date - Date (in format YYYY-MM-DD HH:MM.SS)
@@ -20,41 +18,18 @@ produces a clean VMS dataset with the same column names so it can be used with t
 ## Input parameters (user specification)
 
 ```{r}
-# NOTE THAT ANYTHING THAT STARTS WITH A "#" IN THE CODE SECTION MEANS COMMENT
-
-# YOUR COUNTRY NAME ------------------------------------------------------------
-# Current choices: "Ghana", "Liberia", "Sierra Leone", "Iceland"
+# ------------------------------------------------------------------------------
+# 1. IMPORTING AND STANDARDIZATION
+#
+# Country name -----------------------------------------------------------------
+#              Current choices: "Ghana", "Liberia", "Sierra Leone", "Iceland"
 country <- "Iceland"  
-
-# THE FILE NAME TO READ IN AND THE FILE NAME OF THE STANDARDIZED DATA TO SAVE --
-
-# Path to and file name to VMS data file you want to analyze
+#
+# Path and file name of data to import -----------------------------------------
 file.in = "data-raw/iceland_vms.csv"
-
-# The (path and the) file name for the output file (standardized format)
+#
+# Path and file name for the output file (standardized format) -----------------
 file.out = "data-tidy/VMS_standardized.csv"
-
-# THE SPEED RANGE TO CONSIDERED AS FISHING AND THE MAXIMUM REALISTIC SPEED -----
-#  Units are in knots
-speed.min = 2
-speed.max = 4.5
-
-# Maximum realistic speed
-#  NOTE: Julian - I am not sure if we should remove these points from
-#        the standardized file
-speed.limit = 15
-
-# DATE RANGE TO INCLUDE IN THE ANALYSIS ----------------------------------------
-#      Dates outside this range will be removed before the output files is saved
-#      Lets call this our standardized format
-
-# Filter VMS data by a date interval?
-# Choices are "Yes" or "No"
-filter.by.date = "No"   # choices "Yes" or "No"
-# If yes above,  specify interval (use YYYY-MM-DD HH:MM:SS format)
-date.min = "2000-01-01 00:00:00"
-date.max = "2100-12-31 23:59:59"
-
 ```
 
 ```{r setup, include=FALSE}
@@ -63,51 +38,23 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 ```{r}
 # Needed libaries
-library(knitr)
 library(tidyverse)
-library(lubridate)
-library(rio)
 library(ghsllr)
 ```
 
 ```{r}
-# Imports data -----------------------------------------------------------------
-vms <- vms_import_data(file.in, country, lon.min, lon.max, lat.min, lat.max)
-```
-
-
-```{r}
-if(filter.by.date == "Yes"){
-  vms <- 
-    vms %>%
-    dplyr::filter(between(date, ymd_hms(date.min), ymd_hms(date.max)))
-}
-
+vms <- vms_import_data(file.in, country)
+vms %>%
+  dplyr::select(vid, date, lon, lat, speed, country) %>%
+  mutate(date = as.character(date)) %>%
+  write_csv(file.out)
 ```
 
 ## Data summary
 
 ```{r}
 vms %>%
-  mutate(day = day(date)) %>%
-  summarise(Date.minimum = min(date, na.rm = TRUE),
-            Date.maximum = max(date, na.rm = TRUE),
-            Date.range = lubridate::as_date(Date.maximum) - lubridate::as_date(Date.minimum) + 1,
-            Date.distinct = n_distinct(day),
-            Date.missing = sum(is.na(date)),
-            Longitude.minimum = min(lon, na.rm = TRUE),
-            Longitude.maximum = max(lon, na.rm = TRUE),
-            Longitude.missing = sum(is.na(lon)),
-            Latitude.minimum = min(lat, na.rm = TRUE),
-            Latitude.maximum = max(lat, na.rm = TRUE),
-            Latitude.missing = sum(is.na(lat)),
-            Speed.minimum = min(speed, na.rm = TRUE),
-            Speed.maximum = max(speed, na.rm = TRUE),
-            Speed.missing = sum(is.na(speed)),
-            Vessel.distinct = n_distinct(vid)) %>% 
-  mutate_all(as.character) %>%
-  gather(variable, value) %>%
-  separate(variable, c("variable", "statistics")) %>%
+  vms_data_summary() %>% 
   knitr::kable()
 
 vms_plot_speed(vms)
@@ -116,18 +63,7 @@ vms_plot_speed(vms)
 ## Vessel summary
 
 ```{r}
-
-fs <- unique(vms$activity)
 vms %>%
-  group_by(vid) %>%
-  summarise(Total_records = length(activity),
-            Fishing_records = sum(activity == fs[1])) %>%
-  rename(Vessel = vid) %>%
+  vms_vessel_summary() %>% 
   knitr::kable()
-
-vms %>%
-  dplyr::select(vid, date, lon, lat, speed, fishing) %>%
-  mutate(date = as.character(date)) %>%
-  write_csv(file.out)
-
 ```

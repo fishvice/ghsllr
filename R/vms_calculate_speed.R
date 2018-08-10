@@ -13,10 +13,10 @@
 vms_calculate_speed <- function(d) {
 
   if(!"distance" %in% names(d)) d <- vms_calculate_distance(d)
-  if(!"time" %in% names(d))     d <- vms_calculate_speed(d)
+  if(!"duration" %in% names(d))     d <- vms_calculate_duration(d)
 
   d %>%
-    dplyr::mutate(dspeed = distance / time) %>%
+    dplyr::mutate(dspeed = distance / duration) %>%
     dplyr::ungroup()
 
 }

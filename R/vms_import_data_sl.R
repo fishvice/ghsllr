@@ -1,4 +1,3 @@
-#' @export
 vms_import_data_sl <- function(file.name) {
 
   d <- rio::import(file.name, setclass="tibble") %>%

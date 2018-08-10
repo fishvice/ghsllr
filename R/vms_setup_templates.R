@@ -1,4 +1,14 @@
+#' @title Seeds three rmarkdown documents
+#'
+#' @description The function installs three rmarkdown documents in the current
+#' working directory: 01vms_cleanup.Rmd, 02vms_rasterize.Rmd and 03vms_tracks.Rmd.
+#' The default specification in the rmarkdown documents are set in order to
+#' run VMS example data that reside in the data-raw directory
+#' (see \code{\link{vms_setup_directory}}).
+#'
+#' @return NULL
 #' @export
+#'
 vms_setup_templates <- function() {
 
   path <- paste0(system.file(package = "ghsllr"), "/rmarkdown/templates")

@@ -1,6 +1,7 @@
 Package: ghsllr
 Type: Package
 Title: What the Package Does (Title Case)
+Date: 2018-08-10
 Version: 0.2.0
 Author: Who wrote it
 Maintainer: The package maintainer <yourself@somewhere.net>

@@ -11,6 +11,25 @@
 
 vms_plot_track <- function(d, lon.lim, lat.lim) {
 
+  has.country <- ifelse("country" %in% names(d), TRUE, FALSE)
+  if(has.country) {
+    country <- unique(d$country)[[1]]
+    if(country %in% c("Ghana", "Sierra Leone", "Liberia", "Iceland")) {
+      if(missing(lon.lim)) {
+        if(country == "Ghana")        lon.lim <- c( -4,   2)
+        if(country == "Sierra Leone") lon.lim <- c(-15, -12)
+        if(country == "Liberia")      lon.lim <- c(-12, -10)
+        if(country == "Iceland")      lon.lim <- c(-25, -14)
+      }
+      if(missing(lat.lim)) {
+        if(country == "Ghana")        lat.lim <- c(  3,  7)
+        if(country == "Sierra Leone") lat.lim <- c(  6, 10)
+        if(country == "Liberia")      lat.lim <- c(5.5,  7)
+        if(country == "Iceland")      lat.lim <- c( 63, 65)
+      }
+    }
+  }
+
   if(missing(lon.lim)) lon.lim <- range(d$lon, na.rm = TRUE)
   if(missing(lat.lim)) lat.lim <- range(d$lat, na.rm = TRUE)
 
