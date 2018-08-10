@@ -59,8 +59,7 @@ The objective of the ghsllr-packages is:
 
 * Convert different VMS data-formats into a "standardized format".
 * Provide a set of functions that work on the standardize VMS data for doing some standard summary analysis.
-* Provide a set of functions to convert standardized VMS data to files that can
-then be further processed in GIS software, such as QGIS.
+* Provide a set of functions to convert standardized VMS data to files that can then be further processed in GIS software, such as QGIS.
 * Provide some rmarkdown-templates to generate some standard VMS reports.
 
 The standardized format of a VMS file has at minimum the following names and units for each variable:
@@ -70,7 +69,6 @@ The standardized format of a VMS file has at minimum the following names and uni
 * **lon**: Longitude in units of decimal degrees
 * **lat**: Latitude in units of decimal degrees
 * **speed**: Instantaneous reported speed in units of nautical miles
-# Standardization of VMS data
 * **country**: The country name of the source file.
 
 # Loading needed libraries
@@ -81,6 +79,11 @@ library(mapdata)
 library(tidyverse)
 library(ghsllr)
 ```
+
+And just as a note, for the absolute novice R-user, if you want to repeat any of the codes in this document you can either:
+
+* Copy all the shaded grey R-code lines in this document and past it into your RStudio "Console" step by step.
+* Open up [this](http://www.hafro.is/~einarhj/2018vms/R/using_ghsllr.R) R-script and run things line-by-line.
 
 # Importing and standardizing data
 
@@ -101,9 +104,11 @@ Speed is one of the key metrics of VMS data, because in the absence of any addit
 vms_plot_speed(vms)
 ```
 
-The example shows one out of the two common patterns associated with vms speed data:
+The example shows one of the two common patterns associated with fisheries vessel speed data:
 
 * A biomodal distribution of positive speeds, one normally just under 5 nautical miles the other one just under or around the 10 nautical miles.
+    * The lower speed mode is normally assumed to be associated with __potential__ fishing activity
+    * The higher speed mode is normally assumed to be vessels cruising.
 * A large number of observations of zero speed (not in the above dataset) associated with vessel being in harbour.
 
 We can assign a **potential** fishing activity using speed with the `vms_categorise_fishing`-function. The argument `fishing.lim` takes on the lower and the upper boundaries of the speed postulated as fishing (here speed between 2.5 and 4.5 are assigned as fishing):
