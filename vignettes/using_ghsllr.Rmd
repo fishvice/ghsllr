@@ -12,54 +12,215 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
   comment = "#>"
 )
 ```
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+# Installing ghsllr
 
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
+Just in case you have stumbled on this vignette from any other source than from within the `ghsllr`-package we start with some instruction on how to install it on your computer.
 
-## Vignette Info
+The `ghsllr`-packages does not, and will most likely never be on [CRAN](https://cran.r-project.org). Hence you can not use the base R-function `install.packages` to install it. This is because the `ghsllr` package resides on [github](https://github.com/fishvice/ghsllr). And in order to install packages that are on that space you need a special R-package (`devtools`) to install the `ghsllr`-package!.
 
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
-
-## Styles
-
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
-
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
-
-## Figures
-
-The figure sizes have been customised so that you can easily put two images side-by-side. 
-
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
+So, if you have not installed `devtools` run this code in the console:
+```{r, eval = FALSE}
+install.packages("devtools")
 ```
 
-You can enable figure captions by `fig_caption: yes` in YAML:
-
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
-
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
-
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
+Then the next step is to run the following command in the console:
+```{r, eval = FALSE}
+devtools::install_github("fishvice/ghsllr")
 ```
 
-Also a quote using `>`:
+The above command will install the `ghsllr`-package and (hopefully) all dependent packages. The only package that I can think of that will not be installed is `mapsdata`. To install that run this command in the console:
+```{r, eval = FALSE}
+install.packages("mapdata")
+```
 
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
+Hopefully this is all there is to it. And note, you **don't** have to run the above bunch of code every time you start an R-session. But you may want to do it occasionally, just to get the latest updates.
+
+# Preamble
+
+The `ghsllr`-package contains a bunch of function and rmarkdown templates that aim at making some basic analysis of VMS data simple for people that may be novice to R.
+
+Typical VMS data contain at minimum the following variables:
+
+* **date**: The data and time of the recording
+* **vessel id**: An id of the vessel
+* **longitude**: The longitudinal position of the vessel
+* **latitude**: The latitudinal position of the vessel
+* **speed**: The vessel speed
+
+Additional variables, such as heading, if vessel is in harbour may also be available. Although different VMS data-sources have common variables, the variable names, the unit of the variables and the formatting of the variables may differ.
+
+The objective of the ghsllr-packages is:
+
+* Convert different VMS data-formats into a "standardized format".
+* Provide a set of functions that work on the standardize VMS data for doing some standard summary analysis.
+* Provide a set of functions to convert standardized VMS data to files that can
+then be further processed in GIS software, such as QGIS.
+* Provide some rmarkdown-templates to generate some standard VMS reports.
+
+The standardized format of a VMS file has at minimum the following names and units for each variable:
+
+* **date**: Date/time in the format of yyyy-mm-dd hh:mm:ss
+* **vid**: Vessel identification number. Can be characters, number or combination of both.
+* **lon**: Longitude in units of decimal degrees
+* **lat**: Latitude in units of decimal degrees
+* **speed**: Instantaneous reported speed in units of nautical miles
+# Standardization of VMS data
+* **country**: The country name of the source file.
+
+# Loading needed libraries
+
+The libraries needed to run this document are:
+```{r}
+library(mapdata)
+library(tidyverse)
+library(ghsllr)
+```
+
+# Importing and standardizing data
+
+The function `vms_import_data` converts raw VMS data to a standardized form. It takes two arguments, `file.name` and `country`. The former specifies the path and the name of the raw VMS file, the latter is the country origin of the source file.
+
+```{r}
+vms <- 
+  vms_import_data(file.name = "ftp://ftp.hafro.is/pub/reiknid/einar/vms/iceland_vms.csv",
+                  country = "Iceland")
+glimpse(vms)
+```
+
+# Speed and fishing categorization
+
+Speed is one of the key metrics of VMS data, because in the absence of any additional information it may be the only source that indicates **potiential** fishing activity. For the vms-data one can obtain a histogram of speed using the 'vms_plot_speed'-function:
+
+```{r, fig.width = 7}
+vms_plot_speed(vms)
+```
+
+The example shows one out of the two common patterns associated with vms speed data:
+
+* A biomodal distribution of positive speeds, one normally just under 5 nautical miles the other one just under or around the 10 nautical miles.
+* A large number of observations of zero speed (not in the above dataset) associated with vessel being in harbour.
+
+We can assign a **potential** fishing activity using speed with the `vms_categorise_fishing`-function. The argument `fishing.lim` takes on the lower and the upper boundaries of the speed postulated as fishing (here speed between 2.5 and 4.5 are assigned as fishing):
+```{r}
+vms <- vms_categorise_fishing(vms, fishing.lim = c(2.5, 4.5))
+glimpse(vms)
+```
+
+We have added two new variables, `activity` that categorizes speed into three classes, below, between and above the values specified in the argument `fishing.lim` used above and `fishing` that is TRUE if the speed is within the values. Using the `vms_plot_speed` again we now have:
+
+```{r, fig.width = 7}
+vms_plot_speed(vms)
+```
+
+# Rasterization
+
+VMS data are typically large (e.g. the demo data has `r nrow(vms)` records, but in some cases one can have millions of observations) so that getting an graphical overview of the data requires often that the data is first summarized in some form or another. One such summation process is often referred to as gridding or rasterization (see this [link](http://www.hafro.is/~einarhj/splatter/post/on-gridding-data) for some details).
+
+The `ghsllr`-package has a function called `vms_rasterize`-function that deals with condensing the spatial information of standardized vms-data. The user can specify the grid resolution with the `grid.lim` argument, where the first numerical value refers to the longitudinal resolution and the second number the latitudinal resolution. The following script uses the `vms`-dataframe and counts the number of observations within a 1 x 0.5 degree squares^[Given that the data is from high latitudes (Icelandic waters) this specification results in a rough square].
+...
+```{r, fig.width = 7}
+vms.raster <-
+  vms %>% 
+  vms_rasterize(grid.lim = c(1, 0.5))
+```
+
+The new object(vms.raster) looks something like this:
+```{r}
+vms.raster %>% glimpse()
+```
+
+There are few things to note here:
+
+* Using the `vms_rasterize`-function results in the new vms.raster object having only `r nrow(vms.raster)` observations compared with the original vms object having `r nrow(vms)` observations.
+* The variables `lon` and `lat` are now no longer the same as the original, they current form being the mid-values of the xy-grid.
+* The variable `n` represents the number of observations (pings) observed within the specified xy-grid values.
+
+The objective of generating a raster is first and foremost to generate a visual representation of the data. This is done in the next step, where we use the `vms_plot_raster`-function:
+
+```{r, fig.width = 7}
+vms.raster %>% 
+  vms_plot_raster(lon.lim = c(-26.5, -11.5),
+                  lat.lim = c(63, 67))
+```
+
+In the above case we supplied in addition numbers that express the longitudinal (`lon.lim`) and latitudinal (`lat.lim`) range of the plot we want to show. And the `n` again represents the number of pings within each rectangle.
+
+The plot above represents all the vms-pings, irrespective of speed and hence **potential** fishing activity. If we were only interested in the latter we would need to filter the data before we call the `vms_plot_raster`-function. In the `ghsllr` we have just that type of a function, called `vms_filter_data`. If we were just interested in filtering out data by the speed variable one would do:
+
+```{r}
+vms.fishing <- 
+  vms %>% 
+  vms_filter_data(speed.lim = c(2.5, 4.5))
+glimpse(vms.fishing)
+```
+
+We now have only `r nrow(vms.fishing)` observations compared with `r nrow(vms)` in the original dataset. But these data are still not gridded. Hence we would do:
+```{r}
+vms.raster <-
+  vms.fishing %>% 
+  vms_rasterize(grid.lim = c(1, 0.5))
+```
+
+Lets just plot this and see what we got:
+```{r, fig.width = 7}
+vms.raster %>% 
+  vms_plot_raster()
+```
+
+There are three things to note here:
+
+* We now have fewer number of pings per square.
+* We did not specify the plot limits as done above. This is because if not supplied the `vms_plot_raster` will use the variable `country` to make some sensible suggestions. And we have demonstrated, when specifying the longitudinal and latitudinal limits in the first raster plot that these sensible suggestions can be overridden.
+* The resolution of the grid is very course relative to what we know about how fisheries operates.
+
+On the last point lets try a finer resolution. In the code flow here we will start from scratch (from the standardized data) without generating any immediate objects (like vms.fishing or vms.raster as done above):
+```{r, fig.width = 7}
+vms %>% 
+  vms_filter_data(speed.lim = c(2.5, 4.5)) %>% 
+  vms_rasterize(grid.lim = c(0.1, 0.05)) %>% 
+  vms_plot_raster()
+```
+
+Now we are seeing the fine scales of the **potential** fishing activities. Lets try even a finer resolution:
+```{r, fig.width = 7}
+vms %>% 
+  vms_filter_data(speed.lim = c(2.5, 4.5)) %>% 
+  vms_rasterize(grid.lim = c(0.01, 0.005)) %>% 
+  vms_plot_raster()
+```
+
+In this last plot we are observing the real fine scales that this example fishery operates on, the scale being 0.01 x 0.005 decimal degrees.
+
+Now how fine resolution one can specify depends a little bit on the frequency of recordings in the data-source, the type of fisheries and the type of topography/hydrography that the fisheries operates on.
+
+There is one problem with the visualization provide above - the image is very static. We can e.g. "zoom" easily in and out for different areas. There are two remedies:
+
+* Create an interactive plot within R.
+* Export the data so that it can be imported into a GIS software such as QGIS.
+
+Lets deal with the latter, for now. Here we can use the `vms_esport_raster`-function. Before you run the code below make sure you have a directory (read: folder) named "data-products" in your current working directory.
+
+```{r}
+vms %>% 
+  vms_filter_data(speed.lim = c(2.5, 4.5)) %>% 
+  vms_rasterize(grid.lim = c(0.01, 0.01)) %>%
+  vms_export_raster(file.name = "data-products/vms_raster")
+```
+
+You should now have an object (read: folder) named "vms_raster.asc" in the "data-product" directory. This file you should be able to import into QGIS.
+
+# Vessel tracks
+
+... text pending.
+
+  
+  
+  
+  
+  

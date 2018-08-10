@@ -20,7 +20,7 @@ vms_import_data <- function(file.name, country) {
     stop('country specification needs to be one of "Ghana", "Liberia", "Sierra Leone" or "Iceland"')
   }
 
-  if(!file.exists(file.name)) stop(paste0('path and file name: "', file.name, '"not found'))
+  if(country != "Iceland" & !file.exists(file.name)) stop(paste0('path and file name: "', file.name, '"not found'))
 
   if(country == "Iceland")      d <- vms_import_data_is(file.name)
   if(country == "Ghana")        d <- vms_import_data_gh(file.name)
