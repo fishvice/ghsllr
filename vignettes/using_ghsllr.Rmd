@@ -202,9 +202,11 @@ vms %>%
 
 Now we are seeing the fine scales of the **potential** fishing activities. Lets try even a finer resolution:
 ```{r, fig.width = 7}
-vms %>% 
+vms.raster <- 
+  vms %>% 
   vms_filter_data(speed.lim = c(2.5, 4.0)) %>% 
-  vms_rasterize(grid.lim = c(0.01, 0.005)) %>% 
+  vms_rasterize(grid.lim = c(0.01, 0.005)) 
+vms.raster %>% 
   vms_plot_raster()
 ```
 
@@ -221,12 +223,7 @@ There is one problem with the visualization provide above - the image is very st
 
 Here we would only need to change one argument in the function `vms_plot_raster`. We just overwrite the default ("ggplot2") by specifying type being "leaflet":
 ```{r, fig.width = 7}
-r <- 
-  vms %>% 
-  vms_filter_data(speed.lim = c(2.5, 4.0),
-                  lat.lim = c(63, 65)) %>% 
-  vms_rasterize(grid.lim = c(0.01, 0.005)) 
-r %>% 
+vms.raster %>% 
   vms_plot_raster(type = "leaflet")
 ```
 
