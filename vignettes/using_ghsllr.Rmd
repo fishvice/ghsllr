@@ -39,7 +39,12 @@ The above command will install the `ghsllr`-package and (hopefully) all dependen
 install.packages("mapdata")
 ```
 
-Hopefully this is all there is to it. And note, you **don't** have to run the above bunch of code every time you start an R-session. But you may want to do it occasionally, just to get the latest updates.
+Hopefully this is all there is to it. And note, you **don't** have to run the above bunch of code every time you start an R-session. But you may want to do it occasionally, just to get the latest updates. If you only want to get the laterst update of the `ghsllr`-packages but not other packages then you could just do:
+
+```{r, eval = FALSE}
+devtools::install_github("fishvice/ghsllr", dependencies = FALSE)
+```
+
 
 # Preamble
 
