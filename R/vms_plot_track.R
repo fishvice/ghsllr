@@ -39,7 +39,7 @@ vms_plot_track <- function(d, lon.lim, lat.lim) {
 
   d <-
     d %>%
-    dplyr::mutate(speed = ifelse(speed > 12, 12, speed))
+    dplyr::mutate(speed = dplyr::if_else(speed > 12, 12, speed, NA_real_))
 
   p <-
     d %>%

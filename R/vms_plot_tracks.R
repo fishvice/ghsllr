@@ -34,7 +34,7 @@ vms_plot_tracks <- function(d, lon.lim, lat.lim) {
 
   vids <- unique(d$vid)
 
-  for(i in vids){
+  for(i in vids) {
 
     p <-
       d %>%
