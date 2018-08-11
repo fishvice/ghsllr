@@ -12,6 +12,7 @@ Depends:
 Imports:
     dplyr,
     ggplot2,
+    leaflet,
     lubridate,
     magrittr,
     maps,

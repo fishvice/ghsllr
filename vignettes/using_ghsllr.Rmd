@@ -214,10 +214,25 @@ Now how fine resolution one should specify to reveal fishing location depends a 
 
 There is one problem with the visualization provide above - the image is very static. We can e.g. "zoom" easily in and out for different areas. There are two remedies:
 
-* Create an interactive plot within R.
-* Export the data so that it can be imported into a GIS software such as QGIS.
+1. Create an interactive plot within R.
+2. Export the data so that it can be imported into a GIS software such as QGIS.
 
-Lets deal with the latter, for now. Here we can use the `vms_esport_raster`-function. Before you run the code below make sure you have a directory (read: folder) named "data-products" in your current working directory.
+## Interactive plot
+
+Here we would only need to change one argument in the function `vms_plot_raster`. We just overwrite the default ("ggplot2") by specifying type being "leaflet":
+```{r, fig.width = 7}
+r <- 
+  vms %>% 
+  vms_filter_data(speed.lim = c(2.5, 4.0),
+                  lat.lim = c(63, 65)) %>% 
+  vms_rasterize(grid.lim = c(0.01, 0.005)) 
+r %>% 
+  vms_plot_raster(type = "leaflet")
+```
+
+## Exporting data
+
+Here we can use the `vms_esport_raster`-function. Before you run the code below make sure you have a directory (read: folder) named "data-products" in your current working directory.
 
 ```{r, eval = FALSE}
 vms %>% 

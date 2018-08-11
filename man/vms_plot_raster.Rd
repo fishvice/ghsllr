@@ -4,7 +4,7 @@
 \alias{vms_plot_raster}
 \title{Title}
 \usage{
-vms_plot_raster(d, lon.lim, lat.lim)
+vms_plot_raster(d, lon.lim, lat.lim, type = "ggplot2")
 }
 \arguments{
 \item{d}{A tidy vms dataframe containing variables "lon" and "lat"}
@@ -12,6 +12,8 @@ vms_plot_raster(d, lon.lim, lat.lim)
 \item{lon.lim}{A vector containing lower and upper longitudes to plot}
 
 \item{lat.lim}{A vector containing lower and upper latitudes to plot}
+
+\item{type}{A vector, "ggplot2" or "leaflet"}
 }
 \description{
 Title
