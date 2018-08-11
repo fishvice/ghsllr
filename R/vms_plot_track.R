@@ -37,15 +37,29 @@ vms_plot_track <- function(d, lon.lim, lat.lim) {
                          xlim = lon.lim,
                          ylim = lat.lim)
 
-  ids <- unique(d$vid)
+  d <-
+    d %>%
+    dplyr::mutate(speed = ifelse(speed > 12, 12, speed))
 
   p <-
     d %>%
     ggplot2::ggplot() +
     ggplot2::theme_bw(base_size = 16) +
     ggplot2::geom_polygon(data = m, ggplot2::aes(long, lat, group = group), fill = "grey") +
-    ggplot2::geom_path(ggplot2::aes(lon, lat), colour = "grey") +
-    ggplot2::geom_point(ggplot2::aes(lon, lat, colour = speed, shape = activity), size = 1) +
+    ggplot2::geom_path(ggplot2::aes(lon, lat), colour = "grey")
+
+  if("activity" %in% names(d)) {
+    p <-
+      p +
+      ggplot2::geom_point(ggplot2::aes(lon, lat, colour = speed, shape = activity), size = 1)
+  } else {
+    p <-
+      p +
+      ggplot2::geom_point(ggplot2::aes(lon, lat, colour = speed))
+  }
+
+  p <-
+    p +
     viridis::scale_colour_viridis(option = "B", direction = -1) +
     ggplot2::coord_quickmap(xlim = lon.lim,  ylim = lat.lim) +
     ggplot2::scale_x_continuous(NULL) +

@@ -65,6 +65,7 @@ The objective of the ghsllr-packages is:
 The standardized format of a VMS file has at minimum the following names and units for each variable:
 
 * **date**: Date/time in the format of yyyy-mm-dd hh:mm:ss
+* **month**: A numerical value from 1 to 12 representing the month of year.
 * **vid**: Vessel identification number. Can be characters, number or combination of both.
 * **lon**: Longitude in units of decimal degrees
 * **lat**: Latitude in units of decimal degrees
@@ -89,6 +90,8 @@ And just as a note, for the absolute novice R-user, if you want to repeat any of
 
 The function `vms_import_data` converts raw VMS data to a standardized form. It takes two arguments, `file.name` and `country`. The former specifies the path and the name of the raw VMS file, the latter is the country origin of the source file.
 
+Lets read some example VMS data, in this specific case directly from an [ftp site](ftp://ftp.hafro.is/pub/reiknid/einar/vms/iceland_vms.csv):
+
 ```{r}
 vms <- 
   vms_import_data(file.name = "ftp://ftp.hafro.is/pub/reiknid/einar/vms/iceland_vms.csv",
@@ -111,9 +114,9 @@ The example shows one of the two common patterns associated with fisheries vesse
     * The higher speed mode is normally assumed to be vessels cruising.
 * A large number of observations of zero speed (not in the above dataset) associated with vessel being in harbour.
 
-We can assign a **potential** fishing activity using speed with the `vms_categorise_fishing`-function. The argument `fishing.lim` takes on the lower and the upper boundaries of the speed postulated as fishing (here speed between 2.5 and 4.5 are assigned as fishing):
+We can assign a **potential** fishing activity using speed with the `vms_categorise_fishing`-function. The argument `fishing.lim` takes on the lower and the upper boundaries of the speed postulated as fishing (here speed between 2.5 and 4 are assigned as fishing):
 ```{r}
-vms <- vms_categorise_fishing(vms, fishing.lim = c(2.5, 4.5))
+vms <- vms_categorise_fishing(vms, fishing.lim = c(2.5, 4.0))
 glimpse(vms)
 ```
 
@@ -161,7 +164,7 @@ The plot above represents all the vms-pings, irrespective of speed and hence **p
 ```{r}
 vms.fishing <- 
   vms %>% 
-  vms_filter_data(speed.lim = c(2.5, 4.5))
+  vms_filter_data(speed.lim = c(2.5, 4.0))
 glimpse(vms.fishing)
 ```
 
@@ -187,7 +190,7 @@ There are three things to note here:
 On the last point lets try a finer resolution. In the code flow here we will start from scratch (from the standardized data) without generating any immediate objects (like vms.fishing or vms.raster as done above):
 ```{r, fig.width = 7}
 vms %>% 
-  vms_filter_data(speed.lim = c(2.5, 4.5)) %>% 
+  vms_filter_data(speed.lim = c(2.5, 4.0)) %>% 
   vms_rasterize(grid.lim = c(0.1, 0.05)) %>% 
   vms_plot_raster()
 ```
@@ -195,14 +198,14 @@ vms %>%
 Now we are seeing the fine scales of the **potential** fishing activities. Lets try even a finer resolution:
 ```{r, fig.width = 7}
 vms %>% 
-  vms_filter_data(speed.lim = c(2.5, 4.5)) %>% 
+  vms_filter_data(speed.lim = c(2.5, 4.0)) %>% 
   vms_rasterize(grid.lim = c(0.01, 0.005)) %>% 
   vms_plot_raster()
 ```
 
 In this last plot we are observing the real fine scales that this example fishery operates on, the scale being 0.01 x 0.005 decimal degrees.
 
-Now how fine resolution one can specify depends a little bit on the frequency of recordings in the data-source, the type of fisheries and the type of topography/hydrography that the fisheries operates on.
+Now how fine resolution one should specify to reveal fishing location depends a little bit on the frequency of recordings in the data-source, the type of fisheries and the type of topography/hydrography that the fisheries operates on.
 
 There is one problem with the visualization provide above - the image is very static. We can e.g. "zoom" easily in and out for different areas. There are two remedies:
 
@@ -211,9 +214,9 @@ There is one problem with the visualization provide above - the image is very st
 
 Lets deal with the latter, for now. Here we can use the `vms_esport_raster`-function. Before you run the code below make sure you have a directory (read: folder) named "data-products" in your current working directory.
 
-```{r}
+```{r, eval = FALSE}
 vms %>% 
-  vms_filter_data(speed.lim = c(2.5, 4.5)) %>% 
+  vms_filter_data(speed.lim = c(2.5, 4.0)) %>% 
   vms_rasterize(grid.lim = c(0.01, 0.01)) %>%
   vms_export_raster(file.name = "data-products/vms_raster")
 ```
@@ -222,10 +225,23 @@ You should now have an object (read: folder) named "vms_raster.asc" in the "data
 
 # Vessel tracks
 
-... text pending.
+We may be interested in observing the track of a vessel over time in order to get a better understanding of how the fishery operates. Depending on how rich the datasource track plots can become very "crowded". Here is an example of just one vessel:
 
+```{r, fig.width = 7}
+vms %>% 
+  filter(vid == 4) %>% 
+  vms_plot_track()
+```
+
+In the above code we used the function `filter` to limit the plot to only a vessel that has 4 as the identification code. It is definitively crowded so some additional filter of the data may be warranted. Below we have made an additional filtering of the data, only selecting data from the month of June:
   
-  
+```{r, fig.width = 7}
+vms %>% 
+  filter(vid == 4,
+         month == 6) %>% 
+  vms_plot_track()
+```
+
   
   
   

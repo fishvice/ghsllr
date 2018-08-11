@@ -30,7 +30,7 @@ glimpse(vms)
 vms_plot_speed(vms)
 
 ## ------------------------------------------------------------------------
-vms <- vms_categorise_fishing(vms, fishing.lim = c(2.5, 4.5))
+vms <- vms_categorise_fishing(vms, fishing.lim = c(2.5, 4.0))
 glimpse(vms)
 
 ## ---- fig.width = 7------------------------------------------------------
@@ -52,7 +52,7 @@ vms.raster %>%
 ## ------------------------------------------------------------------------
 vms.fishing <- 
   vms %>% 
-  vms_filter_data(speed.lim = c(2.5, 4.5))
+  vms_filter_data(speed.lim = c(2.5, 4.0))
 glimpse(vms.fishing)
 
 ## ------------------------------------------------------------------------
@@ -66,19 +66,30 @@ vms.raster %>%
 
 ## ---- fig.width = 7------------------------------------------------------
 vms %>% 
-  vms_filter_data(speed.lim = c(2.5, 4.5)) %>% 
+  vms_filter_data(speed.lim = c(2.5, 4.0)) %>% 
   vms_rasterize(grid.lim = c(0.1, 0.05)) %>% 
   vms_plot_raster()
 
 ## ---- fig.width = 7------------------------------------------------------
 vms %>% 
-  vms_filter_data(speed.lim = c(2.5, 4.5)) %>% 
+  vms_filter_data(speed.lim = c(2.5, 4.0)) %>% 
   vms_rasterize(grid.lim = c(0.01, 0.005)) %>% 
   vms_plot_raster()
 
-## ------------------------------------------------------------------------
+## ---- eval = FALSE-------------------------------------------------------
+#  vms %>%
+#    vms_filter_data(speed.lim = c(2.5, 4.0)) %>%
+#    vms_rasterize(grid.lim = c(0.01, 0.01)) %>%
+#    vms_export_raster(file.name = "data-products/vms_raster")
+
+## ---- fig.width = 7------------------------------------------------------
 vms %>% 
-  vms_filter_data(speed.lim = c(2.5, 4.5)) %>% 
-  vms_rasterize(grid.lim = c(0.01, 0.01)) %>%
-  vms_export_raster(file.name = "data-products/vms_raster")
+  filter(vid == 4) %>% 
+  vms_plot_track()
+
+## ---- fig.width = 7------------------------------------------------------
+vms %>% 
+  filter(vid == 4,
+         month == 6) %>% 
+  vms_plot_track()
 

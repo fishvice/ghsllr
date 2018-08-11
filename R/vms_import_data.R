@@ -29,7 +29,8 @@ vms_import_data <- function(file.name, country) {
 
   d <-
     d %>%
-    dplyr::mutate(country = country) %>%
+    dplyr::mutate(month = lubridate::month(date),
+                  country = country) %>%
     dplyr::filter(dplyr::between(lon, -179.99999999999, 179.99999999999),
                   dplyr::between(lat, -89.99999999999, 89.99999999999))
 
