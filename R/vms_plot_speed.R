@@ -16,9 +16,12 @@
 #'
 vms_plot_speed <- function(d, bindwidth = 0.5, max.speed = 15) {
 
+
   if("fishing" %in% names(d)) {
     p <-
       d %>%
+      dplyr::select(speed, fishing) %>%
+      tidyr::drop_na() %>%
       dplyr::mutate(speed = grade(speed, bindwidth) - bindwidth/2) %>%
       dplyr::select(speed, fishing) %>%
       dplyr::mutate(fishing = ifelse(fishing, "Fishing", "Not fishing"),
@@ -37,6 +40,8 @@ vms_plot_speed <- function(d, bindwidth = 0.5, max.speed = 15) {
   } else {
     p <-
       d %>%
+      dplyr::select(speed) %>%
+      tidyr::drop_na() %>%
       dplyr::mutate(speed = grade(speed, bindwidth) - bindwidth/2) %>%
       dplyr::mutate(speed = ifelse(speed > max.speed, max.speed, speed)) %>%
       dplyr::group_by(speed) %>%
