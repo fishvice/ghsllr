@@ -70,7 +70,7 @@ The objective of the ghsllr-packages is:
 The standardized format of a VMS file has at minimum the following names and units for each variable:
 
 * **date**: Date/time in the format of yyyy-mm-dd hh:mm:ss
-* **month**: A numerical value from 1 to 12 representing the month of year.
+* **month**: A numerical value from 1 to 12 representing the month of year. Note that this value is obtained from the month information in the data variable, provided for convenience.
 * **vid**: Vessel identification number. Can be characters, number or combination of both.
 * **lon**: Longitude in units of decimal degrees
 * **lat**: Latitude in units of decimal degrees
@@ -88,7 +88,7 @@ library(ghsllr)
 
 And just as a note, for the absolute novice R-user, if you want to repeat any of the codes in this document you can either:
 
-* Copy all the shaded grey R-code lines in this document and past it into your RStudio "Console" step by step.
+* Copy all the shaded grey R-code lines in this document and paste it into your RStudio "Console" step by step.
 * Open up [this](http://www.hafro.is/~einarhj/2018vms/R/using_ghsllr.R) R-script and run things line-by-line.
 
 # Importing and standardizing data
@@ -222,7 +222,7 @@ There is one problem with the visualization provide above - the image is very st
 ## Interactive plot
 
 Here we would only need to change one argument in the function `vms_plot_raster`. We just overwrite the default ("ggplot2") by specifying type being "leaflet":
-```{r, fig.width = 7}
+```{r, fig.width = 7, fig.height = 7}
 vms.raster %>% 
   vms_plot_raster(type = "leaflet")
 ```
@@ -238,7 +238,7 @@ vms %>%
   vms_export_raster(file.name = "data-products/vms_raster")
 ```
 
-You should now have an object (read: folder) named "vms_raster.asc" in the "data-product" directory. This file you should be able to import into QGIS.
+You should now have an object (read: file) named "vms_raster.asc" in the "data-product" directory. This file you should be able to import into QGIS.
 
 # Vessel tracks
 
@@ -259,6 +259,17 @@ vms %>%
   vms_plot_track()
 ```
 
-  
-  
-  
+# Experimental stuff
+
+```{r, fig.width = 7}
+vms %>% 
+  ghsllr:::vms_plot_calendar()
+```
+
+```{r}
+vms %>% 
+  filter(vid == 4, 
+         month == 6) %>% 
+  vms_plot_track()
+```
+
