@@ -10,7 +10,7 @@ vms_categorise_fishing(d, fishing.lim)
 \item{d}{A standardized vms dataframe}
 
 \item{fishing.lim}{A vector specifying the lower and uppper value of
-instantaneous vessel speed that is classified as fishing}
+instantaneous vessel speed that is classified as fishing.}
 }
 \value{
 A dataframe with

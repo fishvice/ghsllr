@@ -266,10 +266,8 @@ vms %>%
   ghsllr:::vms_plot_calendar()
 ```
 
-```{r}
+```{r, fig.width = 7, fig.height = 5}
 vms %>% 
-  filter(vid == 4, 
-         month == 6) %>% 
-  vms_plot_track()
+  ghsllr:::vms_plot_activity()
 ```
 
